@@ -1,0 +1,29 @@
+{
+  "name": "@getsayall/sayall-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-only MCP servers for SayAll apps",
+  "type": "module",
+  "bin": {
+    "sayall-mcp": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
