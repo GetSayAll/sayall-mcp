@@ -8,7 +8,7 @@
 
 - 本地总开关默认关闭；
 - 用户通过 CLI 为每个客户端创建独立只读授权；
-- 普通用户可通过 `./setup.sh Codex` 一步完成安装、构建、开启、授权和配置生成；
+- 普通用户可通过一行 Git clone + 无参数 `./setup.sh` 完成源码安装、构建、开启、授权，并生成标准 `mcpServers` JSON 和 Codex TOML；
 - Agent 可以列出 App，并按时间和 App 分页读取记录；
 - 用户可以撤销单个客户端或关闭全部访问；
 - 无线麦SayAll.app 和 SayAll MCP 不主动上传历史。
@@ -32,7 +32,7 @@
 
 - `src/remote-mic/history-store.ts`：磁盘 Schema、App 汇总、过滤和分页；
 - `src/remote-mic/authorization-store.ts`：开关、授权、哈希验证和撤销；
-- `src/remote-mic/integration-config.ts`：通用 MCP JSON 和 Codex TOML；
+- `src/remote-mic/integration-config.ts`：标准 `mcpServers` JSON、Codex TOML 和可读输出；
 - `src/remote-mic/audit-log.ts`：脱敏访问审计；
 - `src/remote-mic/server.ts`：两个只读 MCP 工具；
 - `src/cli.ts`：本机授权和服务启动命令；
@@ -48,7 +48,7 @@
 - 4 个测试文件、12 项测试通过；
 - TypeScript 严格类型检查通过；
 - 生产构建通过；
-- MCP 集成测试确认只暴露两个工具，撤销后已有连接的下一次查询被拒绝；
+- MCP 集成测试确认只暴露两个带只读标记和输出 Schema 的工具，撤销后已有连接的下一次查询被拒绝；
 - 审计测试确认不包含正文和令牌。
 - 历史根目录和私有事件文件明确拒绝符号链接，避免读取或追加到非预期位置。
 - 构建后的解析器已只读加载本机真实无线麦SayAll.app 历史，正确识别 Codex/TextEdit 分组和 Apple 参考日期，`skippedFileCount` 为 0；该验证没有输出正文或修改文件。
@@ -59,6 +59,6 @@
 
 ## 当前状态与限制
 
-当前状态：候选实现完成，等待真实 Codex MCP 配置和用户数据流验收。
+当前状态：候选实现完成，等待标准 JSON 客户端和 Codex 的真实数据流验收。
 
 已知限制：首版授权使用 CLI/一键脚本，没有无线麦SayAll.app 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。

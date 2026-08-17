@@ -36,6 +36,15 @@ describe("Remote Mic MCP server", () => {
       "list_transcript_apps",
       "query_transcripts",
     ]);
+    for (const tool of tools.tools) {
+      expect(tool.outputSchema).toMatchObject({ type: "object" });
+      expect(tool.annotations).toMatchObject({
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      });
+    }
     expect(applicationResult.isError).not.toBe(true);
     expect(JSON.stringify(applicationResult)).not.toContain(sensitiveText);
     expect(queryResult.isError).not.toBe(true);

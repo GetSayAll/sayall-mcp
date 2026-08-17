@@ -10,6 +10,7 @@ export interface MCPIntegrationOutput {
     args: string[];
     env: Record<string, string>;
   };
+  standardJson: string;
   codexToml: string;
   warning: string;
 }
@@ -21,7 +22,7 @@ export function createMCPIntegrationOutput(
 ): MCPIntegrationOutput {
   const mcpConfig = {
     command: nodeExecutable,
-    args: [cliPath, "remote-mic", "serve"],
+    args: [cliPath, "serve"],
     env: {
       [CLIENT_ID_ENV]: authorization.clientId,
       [ACCESS_TOKEN_ENV]: authorization.token,
@@ -31,15 +32,40 @@ export function createMCPIntegrationOutput(
   return {
     authorization,
     mcpConfig,
+    standardJson: JSON.stringify(
+      {
+        mcpServers: {
+          sayall_history: mcpConfig,
+        },
+      },
+      null,
+      2,
+    ),
     codexToml: [
-      "[mcp_servers.sayall_remote_mic_history]",
+      "[mcp_servers.sayall_history]",
       `command = ${tomlString(mcpConfig.command)}`,
       `args = [${mcpConfig.args.map(tomlString).join(", ")}]`,
       `env = { ${CLIENT_ID_ENV} = ${tomlString(authorization.clientId)}, ${ACCESS_TOKEN_ENV} = ${tomlString(authorization.token)} }`,
     ].join("\n"),
     warning:
-      "无线麦SayAll.app and SayAll MCP do not upload transcripts. The authorized AI client may send returned text to its own provider.",
+      "无线麦SayAll.app and this MCP server do not upload transcripts. The authorized AI client may send returned text to its own provider.",
   };
+}
+
+export function formatMCPIntegrationOutput(output: MCPIntegrationOutput): string {
+  return [
+    `Created read-only authorization for: ${output.authorization.displayName}`,
+    `Client ID: ${output.authorization.clientId}`,
+    "",
+    "Standard MCP JSON (Claude Desktop, Cursor, Windsurf, and compatible hosts):",
+    output.standardJson,
+    "",
+    "Codex TOML:",
+    output.codexToml,
+    "",
+    `Privacy notice: ${output.warning}`,
+    "",
+  ].join("\n");
 }
 
 function tomlString(value: string): string {

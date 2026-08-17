@@ -12,6 +12,38 @@ export interface ServerCredentials {
   token: string;
 }
 
+const applicationSummaryOutputSchema = z.object({
+  applicationName: z.string(),
+  bundleIdentifier: z.string(),
+  recordCount: z.number().int().nonnegative(),
+  earliestEndedAt: z.iso.datetime(),
+  latestEndedAt: z.iso.datetime(),
+});
+
+const listApplicationsOutputSchema = z.object({
+  applications: z.array(applicationSummaryOutputSchema),
+  skippedFileCount: z.number().int().nonnegative(),
+});
+
+const transcriptOutputSchema = z.object({
+  id: z.uuid(),
+  startedAt: z.iso.datetime(),
+  endedAt: z.iso.datetime(),
+  localDateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  timeZoneIdentifier: z.string(),
+  applicationName: z.string(),
+  bundleIdentifier: z.string(),
+  source: z.string(),
+  text: z.string(),
+});
+
+const queryTranscriptsOutputSchema = z.object({
+  records: z.array(transcriptOutputSchema),
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+  skippedFileCount: z.number().int().nonnegative(),
+});
+
 export async function runRemoteMicHistoryServer(
   paths: RemoteMicPaths,
   credentials: ServerCredentials,
@@ -69,6 +101,7 @@ export function createRemoteMicHistoryServer(
       title: "List 无线麦SayAll.app transcript applications",
       description:
         "List applications represented in the user's local 无线麦SayAll.app voice transcript history. Does not return transcript text.",
+      outputSchema: listApplicationsOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -113,6 +146,7 @@ export function createRemoteMicHistoryServer(
         limit: z.number().int().min(1).max(500).optional(),
         cursor: z.string().max(2_048).optional(),
       },
+      outputSchema: queryTranscriptsOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { createMCPIntegrationOutput } from "../src/remote-mic/integration-config.js";
+import {
+  createMCPIntegrationOutput,
+  formatMCPIntegrationOutput,
+} from "../src/remote-mic/integration-config.js";
 
 describe("MCP integration configuration", () => {
   it("returns ready-to-copy generic and Codex configurations", () => {
@@ -18,12 +21,18 @@ describe("MCP integration configuration", () => {
 
     expect(output.mcpConfig.args).toEqual([
       "/Applications/SayAll MCP/dist/cli.js",
-      "remote-mic",
       "serve",
     ]);
-    expect(output.codexToml).toContain("[mcp_servers.sayall_remote_mic_history]");
+    expect(JSON.parse(output.standardJson)).toEqual({
+      mcpServers: {
+        sayall_history: output.mcpConfig,
+      },
+    });
+    expect(output.codexToml).toContain("[mcp_servers.sayall_history]");
     expect(output.codexToml).toContain('command = "/usr/local/bin/node"');
     expect(output.codexToml).toContain("SAYALL_MCP_CLIENT_ID");
     expect(output.codexToml).toContain("SAYALL_MCP_ACCESS_TOKEN");
+    expect(formatMCPIntegrationOutput(output)).toContain("Standard MCP JSON");
+    expect(formatMCPIntegrationOutput(output)).toContain("Codex TOML");
   });
 });

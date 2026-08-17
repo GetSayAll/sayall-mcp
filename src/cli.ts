@@ -3,7 +3,10 @@
 import { fileURLToPath } from "node:url";
 
 import { AuthorizationStore } from "./remote-mic/authorization-store.js";
-import { createMCPIntegrationOutput } from "./remote-mic/integration-config.js";
+import {
+  createMCPIntegrationOutput,
+  formatMCPIntegrationOutput,
+} from "./remote-mic/integration-config.js";
 import { defaultRemoteMicPaths } from "./remote-mic/paths.js";
 import { runRemoteMicHistoryServer } from "./remote-mic/server.js";
 
@@ -11,9 +14,15 @@ const CLIENT_ID_ENV = "SAYALL_MCP_CLIENT_ID";
 const ACCESS_TOKEN_ENV = "SAYALL_MCP_ACCESS_TOKEN";
 
 async function main(): Promise<void> {
-  const [domain, command, ...argumentsList] = process.argv.slice(2);
-  if (domain !== "remote-mic" || !command) {
+  const cliArguments = process.argv.slice(2);
+  const usesLegacyDomain = cliArguments[0] === "remote-mic";
+  const command = usesLegacyDomain ? cliArguments[1] : cliArguments[0];
+  const argumentsList = usesLegacyDomain ? cliArguments.slice(2) : cliArguments.slice(1);
+  if (!command) {
     printUsageAndExit();
+  }
+  if (command === "help" || command === "--help" || command === "-h") {
+    printUsageAndExit(0);
   }
 
   const paths = defaultRemoteMicPaths();
@@ -47,15 +56,20 @@ async function main(): Promise<void> {
       return;
     }
     case "setup": {
-      const displayName = optionalOption(argumentsList, "--name") ?? "Codex";
+      const displayName = argumentsList.includes("--name")
+        ? requiredOption(argumentsList, "--name")
+        : "Local AI Client";
       const authorization = await authorizationStore.setupAuthorization(displayName);
-      printJSON(
-        createMCPIntegrationOutput(
-          authorization,
-          process.execPath,
-          fileURLToPath(import.meta.url),
-        ),
+      const output = createMCPIntegrationOutput(
+        authorization,
+        process.execPath,
+        fileURLToPath(import.meta.url),
       );
+      if (argumentsList.includes("--json")) {
+        printJSON(output);
+      } else {
+        process.stdout.write(formatMCPIntegrationOutput(output));
+      }
       return;
     }
     case "revoke":
@@ -112,21 +126,23 @@ function printJSON(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-function printUsageAndExit(): never {
+function printUsageAndExit(exitCode = 2): never {
   process.stderr.write(
     [
       "Usage:",
-      "  sayall-mcp remote-mic enable",
-      "  sayall-mcp remote-mic disable",
-      "  sayall-mcp remote-mic status",
-      "  sayall-mcp remote-mic setup [--name <client-name>]",
-      "  sayall-mcp remote-mic authorize --name <client-name>",
-      "  sayall-mcp remote-mic revoke --client-id <uuid>",
-      "  sayall-mcp remote-mic list",
-      "  sayall-mcp remote-mic serve",
+      "  sayall-mcp setup [--name <client-name>] [--json]",
+      "  sayall-mcp status",
+      "  sayall-mcp list",
+      "  sayall-mcp revoke --client-id <uuid>",
+      "  sayall-mcp enable",
+      "  sayall-mcp disable",
+      "  sayall-mcp authorize --name <client-name>",
+      "  sayall-mcp serve",
+      "",
+      "Legacy 'sayall-mcp remote-mic <command>' syntax remains supported.",
     ].join("\n") + "\n",
   );
-  process.exit(2);
+  process.exit(exitCode);
 }
 
 main().catch((error: unknown) => {
