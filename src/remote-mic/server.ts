@@ -49,7 +49,7 @@ export async function runRemoteMicHistoryServer(
     maxBufferSize: 1024 * 1024,
   });
   await server.connect(transport);
-  console.error("SayAll Remote Mic history MCP server is running on stdio.");
+  console.error("无线麦SayAll.app history MCP server is running on stdio.");
 }
 
 export function createRemoteMicHistoryServer(
@@ -66,9 +66,9 @@ export function createRemoteMicHistoryServer(
   server.registerTool(
     "list_transcript_apps",
     {
-      title: "List Remote Mic transcript applications",
+      title: "List 无线麦SayAll.app transcript applications",
       description:
-        "List applications represented in the user's local Remote Mic voice transcript history. Does not return transcript text.",
+        "List applications represented in the user's local 无线麦SayAll.app voice transcript history. Does not return transcript text.",
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -102,9 +102,9 @@ export function createRemoteMicHistoryServer(
   server.registerTool(
     "query_transcripts",
     {
-      title: "Query Remote Mic transcripts",
+      title: "Query 无线麦SayAll.app transcripts",
       description:
-        "Read authorized local Remote Mic transcript records with optional time and application filters. Results are paginated.",
+        "Read authorized local 无线麦SayAll.app transcript records with optional time and application filters. Results are paginated.",
       inputSchema: {
         startedAtOrAfter: z.iso.datetime().optional(),
         endedAtBefore: z.iso.datetime().optional(),

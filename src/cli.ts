@@ -48,7 +48,7 @@ async function main(): Promise<void> {
           },
         },
         warning:
-          "Remote Mic and SayAll MCP do not upload transcripts. The authorized AI client may send returned text to its own provider.",
+          "无线麦SayAll.app and SayAll MCP do not upload transcripts. The authorized AI client may send returned text to its own provider.",
       });
       return;
     }

@@ -1,8 +1,8 @@
-# Remote Mic 本地语音历史 MCP
+# 无线麦SayAll.app 本地语音历史 MCP
 
 ## 为什么开发
 
-Remote Mic 已经在用户主动开启后把语音转文字历史保存在本机，但其他 Agent 没有一个明确、可授权、可撤销的读取入口。本功能通过本机 MCP stdio 提供只读访问，让 Agent 能够自行分析今天、本周或不同 App 的历史，而不把分析逻辑放进 Remote Mic。
+无线麦SayAll.app 已经在用户主动开启后把语音转文字历史保存在本机，但其他 Agent 没有一个明确、可授权、可撤销的读取入口。本功能通过本机 MCP stdio 提供只读访问，让 Agent 能够自行分析今天、本周或不同 App 的历史，而不把分析逻辑放进无线麦SayAll.app。
 
 ## 用户功能
 
@@ -10,11 +10,11 @@ Remote Mic 已经在用户主动开启后把语音转文字历史保存在本机
 - 用户通过 CLI 为每个客户端创建独立只读授权；
 - Agent 可以列出 App，并按时间和 App 分页读取记录；
 - 用户可以撤销单个客户端或关闭全部访问；
-- Remote Mic 和 SayAll MCP 不主动上传历史。
+- 无线麦SayAll.app 和 SayAll MCP 不主动上传历史。
 
 ## 范围与非目标
 
-本次只实现读取。不会修改、删除、恢复、总结、聚类、搜索、Embedding、订阅或上传语音历史。不会复用 Remote Mic 的手机服务、Web Relay 或其他网络协议。
+本次只实现读取。不会修改、删除、恢复、总结、聚类、搜索、Embedding、订阅或上传语音历史。不会复用无线麦SayAll.app 的手机服务、Web Relay 或其他网络协议。
 
 ## 关键设计
 
@@ -39,7 +39,7 @@ Remote Mic 已经在用户主动开启后把语音转文字历史保存在本机
 
 ## 隐私与兼容边界
 
-服务只读取 `Application Support/RemoteMic/Transcripts/v1`，不会更改现有格式。Remote Mic 和 SayAll MCP 不上传数据，但被授权客户端可能把读取内容发送给其云端模型。同一 macOS 登录用户下的恶意非沙盒进程不属于首版可强隔离边界。
+服务只读取 `Application Support/RemoteMic/Transcripts/v1`，不会更改现有格式。无线麦SayAll.app 和 SayAll MCP 不上传数据，但被授权客户端可能把读取内容发送给其云端模型。同一 macOS 登录用户下的恶意非沙盒进程不属于首版可强隔离边界。
 
 ## 自动化验证
 
@@ -49,7 +49,7 @@ Remote Mic 已经在用户主动开启后把语音转文字历史保存在本机
 - MCP 集成测试确认只暴露两个工具，撤销后已有连接的下一次查询被拒绝；
 - 审计测试确认不包含正文和令牌。
 - 历史根目录和私有事件文件明确拒绝符号链接，避免读取或追加到非预期位置。
-- 构建后的解析器已只读加载本机真实 Remote Mic 历史，正确识别 Codex/TextEdit 分组和 Apple 参考日期，`skippedFileCount` 为 0；该验证没有输出正文或修改文件。
+- 构建后的解析器已只读加载本机真实无线麦SayAll.app 历史，正确识别 Codex/TextEdit 分组和 Apple 参考日期，`skippedFileCount` 为 0；该验证没有输出正文或修改文件。
 
 ## 人工测试
 
@@ -59,4 +59,4 @@ Remote Mic 已经在用户主动开启后把语音转文字历史保存在本机
 
 当前状态：候选实现完成，等待真实 Codex MCP 配置和用户数据流验收。
 
-已知限制：首版授权使用 CLI，没有 Remote Mic 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。
+已知限制：首版授权使用 CLI，没有无线麦SayAll.app 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。

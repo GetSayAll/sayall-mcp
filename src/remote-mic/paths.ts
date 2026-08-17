@@ -9,7 +9,7 @@ export interface RemoteMicPaths {
 
 export function defaultRemoteMicPaths(): RemoteMicPaths {
   if (process.platform !== "darwin") {
-    throw new Error("Remote Mic history access currently supports macOS only.");
+    throw new Error("无线麦SayAll.app history access currently supports macOS only.");
   }
 
   const applicationSupport = path.join(os.homedir(), "Library", "Application Support");

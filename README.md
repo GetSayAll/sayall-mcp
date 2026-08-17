@@ -1,8 +1,8 @@
 # SayAll MCP
 
-SayAll 产品的本机 MCP 服务集合。当前提供 Remote Mic 语音转文字历史的只读接口。
+SayAll 产品的本机 MCP 服务集合。当前提供无线麦SayAll.app 语音转文字历史的只读接口。
 
-仓库为私有仓库。服务使用 MCP `stdio`，不监听 HTTP/TCP 端口，不注册 Bonjour，也不把 Remote Mic 历史上传到 SayAll 服务。
+仓库公开供其他 App 集成。服务使用 MCP `stdio`，不监听 HTTP/TCP 端口，不注册 Bonjour，也不把无线麦SayAll.app 历史上传到 SayAll 服务。
 
 ## 当前能力
 
@@ -16,7 +16,7 @@ SayAll 产品的本机 MCP 服务集合。当前提供 Remote Mic 语音转文�
 
 ## 隐私边界
 
-Remote Mic 和 SayAll MCP 不主动上传语音历史。但如果被授权的 Codex、Claude Desktop 或其他客户端使用云端模型，它可能把 MCP 返回的文字发送给自己的服务商。创建授权前应确认该客户端的数据处理方式。
+无线麦SayAll.app 和 SayAll MCP 不主动上传语音历史。但如果被授权的 Codex、Claude Desktop 或其他客户端使用云端模型，它可能把 MCP 返回的文字发送给自己的服务商。创建授权前应确认该客户端的数据处理方式。
 
 当前授权边界面向正常本机集成，不宣称能够抵御运行在同一 macOS 登录用户下的恶意非沙盒进程；这类进程理论上也可能绕过 MCP，直接尝试读取用户自己的 Application Support 文件。
 
@@ -84,7 +84,7 @@ node dist/cli.js remote-mic revoke --client-id <UUID>
 node dist/cli.js remote-mic disable
 ```
 
-关闭总开关不会删除 Remote Mic 历史或授权事件，但所有 MCP 查询会立即被拒绝。
+关闭总开关不会删除无线麦SayAll.app 历史或授权事件，但所有 MCP 查询会立即被拒绝。
 
 ## MCP 配置
 
