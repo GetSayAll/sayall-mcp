@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sayall.app/mcp/v1/query-transcripts.output.schema.json",
+  "title": "query_transcripts output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["records", "nextCursor", "hasMore", "skippedFileCount"],
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "startedAt",
+          "endedAt",
+          "localDateKey",
+          "timeZoneIdentifier",
+          "applicationName",
+          "bundleIdentifier",
+          "source",
+          "text"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "endedAt": { "type": "string", "format": "date-time" },
+          "localDateKey": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "timeZoneIdentifier": { "type": "string" },
+          "applicationName": { "type": "string" },
+          "bundleIdentifier": { "type": "string" },
+          "source": { "type": "string" },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "nextCursor": { "type": ["string", "null"] },
+    "hasMore": { "type": "boolean" },
+    "skippedFileCount": { "type": "integer", "minimum": 0 }
+  }
+}

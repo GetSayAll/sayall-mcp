@@ -2,56 +2,52 @@
 
 ## 为什么开发
 
-无线麦SayAll.app 已经在用户主动开启后把语音转文字历史保存在本机，但其他 Agent 没有一个明确、可授权、可撤销的读取入口。本功能通过本机 MCP stdio 提供只读访问，让 Agent 能够自行分析今天、本周或不同 App 的历史，而不把分析逻辑放进无线麦SayAll.app。
+无线麦SayAll.app 已经在用户主动开启后把语音转文字历史保存在本机，但其他 Agent 需要一个明确、可授权、可撤销且无需阅读 App 主仓库的读取契约。本仓库作为公开集成入口，描述 App 内 Swift Helper 提供的本机 MCP `stdio` 能力。
 
 ## 用户功能
 
 - 本地总开关默认关闭；
-- 用户通过 CLI 为每个客户端创建独立只读授权；
-- 普通用户可通过一行 Git clone + 无参数 `./setup.sh` 完成源码安装、构建、开启、授权，并生成标准 `mcpServers` JSON 和 Codex TOML；
+- 用户在无线麦SayAll.app“回眸”页面为每个客户端创建独立只读授权；
+- App 直接生成标准 `mcpServers` JSON 和 Codex TOML；
 - Agent 可以列出 App，并按时间和 App 分页读取记录；
 - 用户可以撤销单个客户端或关闭全部访问；
-- 无线麦SayAll.app 和 SayAll MCP 不主动上传历史。
+- 用户只安装无线麦SayAll.app，不需要编程工具或依赖环境。
 
 ## 范围与非目标
 
-本次只实现读取。不会修改、删除、恢复、总结、聚类、搜索、Embedding、订阅或上传语音历史。不会复用无线麦SayAll.app 的手机服务、Web Relay 或其他网络协议。
+本次只定义读取接口。不会修改、删除、恢复、总结、聚类、搜索、Embedding、订阅或上传语音历史，不复用无线麦SayAll.app 的手机服务、Web Relay 或其他网络协议。本仓库不提供第二套运行时，也不提供动态插件系统。
 
 ## 关键设计
 
-- 使用官方 MCP SDK 的 stdio transport；
-- Helper 按 Agent 会话启动，不创建常驻服务；
+- 唯一运行时为 App 包内 `Contents/Helpers/SayAllMCP` 原生 Swift 可执行文件；
+- Helper 按 Agent 会话通过 `serve` 启动，不创建常驻服务；
 - 256-bit 随机令牌只保存 SHA-256 哈希；
-- 开关、授权、撤销和审计采用追加事件日志；
 - 每次工具调用重新校验开关、令牌和撤销状态；
 - 查询强制分页，默认 100、最大 500；
 - App 列表和审计不包含转写正文；
-- 读取 Swift `JSONEncoder` 默认 Apple 参考日期并转换为 ISO-8601。
+- `GetSayAll/sayall-mcp` 只保存契约、Schema、示例和测试资料，方便第三方独立集成。
 
 ## 涉及文件
 
-- `src/remote-mic/history-store.ts`：磁盘 Schema、App 汇总、过滤和分页；
-- `src/remote-mic/authorization-store.ts`：开关、授权、哈希验证和撤销；
-- `src/remote-mic/integration-config.ts`：标准 `mcpServers` JSON、Codex TOML 和可读输出；
-- `src/remote-mic/audit-log.ts`：脱敏访问审计；
-- `src/remote-mic/server.ts`：两个只读 MCP 工具；
-- `src/cli.ts`：本机授权和服务启动命令；
-- `tests/`：核心与 MCP 集成自动化；
+- `README.md`：仓库定位和集成入口；
+- `docs/`：快速开始、授权、隐私、工具和兼容政策；
+- `schemas/`：两个工具的 `v1` 输入和输出 JSON Schema；
+- `examples/`：不含真实凭据的客户端配置；
+- `fixtures/`：不含真实用户数据的示例响应；
 - `Testing/RemoteMicLocalHistoryMCP.md`：人工测试手册。
 
 ## 隐私与兼容边界
 
-服务只读取 `Application Support/RemoteMic/Transcripts/v1`，不会更改现有格式。无线麦SayAll.app 和 SayAll MCP 不上传数据，但被授权客户端可能把读取内容发送给其云端模型。同一 macOS 登录用户下的恶意非沙盒进程不属于首版可强隔离边界。
+服务只读取 `Application Support/RemoteMic/Transcripts/v1`。无线麦SayAll.app 和 Helper 不主动上传数据，但被授权客户端可能把读取内容发送给其云端模型。同一 macOS 登录用户下的恶意非沙盒进程不属于首版可强隔离边界。
+
+未发布的 Node 实现不纳入兼容。正式 `v1` 发布后，旧 Agent 配置、工具参数、封闭输出结构和 `v1` 本地数据必须继续可用；可增加可选输入或新工具，新增输出字段及其他破坏性变化使用新工具名或并行 `v2`。
 
 ## 自动化验证
 
-- 4 个测试文件、12 项测试通过；
-- TypeScript 严格类型检查通过；
-- 生产构建通过；
-- MCP 集成测试确认只暴露两个带只读标记和输出 Schema 的工具，撤销后已有连接的下一次查询被拒绝；
-- 审计测试确认不包含正文和令牌。
-- 历史根目录和私有事件文件明确拒绝符号链接，避免读取或追加到非预期位置。
-- 构建后的解析器已只读加载本机真实无线麦SayAll.app 历史，正确识别 Codex/TextEdit 分组和 Apple 参考日期，`skippedFileCount` 为 0；该验证没有输出正文或修改文件。
+- JSON Schema 和配置 JSON 可由标准 JSON 解析器校验；
+- Schema 与无线麦SayAll.app Swift Helper 的 `tools/list` 定义逐字段比对；
+- Fixture 覆盖 App 汇总和分页记录的公开字段；
+- 人工兼容测试保存首个正式 `v1` 的配置、授权状态和请求/响应基线，并用于后续 App 升级回归。
 
 ## 人工测试
 
@@ -59,6 +55,6 @@
 
 ## 当前状态与限制
 
-当前状态：候选实现完成，等待标准 JSON 客户端和 Codex 的真实数据流验收。
+当前状态：候选契约完成，等待标准 JSON 客户端和 Codex 的真实数据流验收。
 
-已知限制：首版授权使用 CLI/一键脚本，没有无线麦SayAll.app 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。
+已知限制：本地 MCP 不等于第三方 AI 客户端离线；用户移动 App 导致 Helper 绝对路径变化时，需要从无线麦SayAll.app 重新复制配置。

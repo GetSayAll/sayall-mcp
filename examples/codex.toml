@@ -1,0 +1,7 @@
+[mcp_servers.sayall_history]
+command = "/Applications/Remote Mic.app/Contents/Helpers/SayAllMCP"
+args = ["serve"]
+
+[mcp_servers.sayall_history.env]
+SAYALL_MCP_CLIENT_ID = "<generated-by-sayall-app>"
+SAYALL_MCP_ACCESS_TOKEN = "<generated-by-sayall-app>"
