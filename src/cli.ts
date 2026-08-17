@@ -14,10 +14,7 @@ const CLIENT_ID_ENV = "SAYALL_MCP_CLIENT_ID";
 const ACCESS_TOKEN_ENV = "SAYALL_MCP_ACCESS_TOKEN";
 
 async function main(): Promise<void> {
-  const cliArguments = process.argv.slice(2);
-  const usesLegacyDomain = cliArguments[0] === "remote-mic";
-  const command = usesLegacyDomain ? cliArguments[1] : cliArguments[0];
-  const argumentsList = usesLegacyDomain ? cliArguments.slice(2) : cliArguments.slice(1);
+  const [command, ...argumentsList] = process.argv.slice(2);
   if (!command) {
     printUsageAndExit();
   }
@@ -138,8 +135,6 @@ function printUsageAndExit(exitCode = 2): never {
       "  sayall-mcp disable",
       "  sayall-mcp authorize --name <client-name>",
       "  sayall-mcp serve",
-      "",
-      "Legacy 'sayall-mcp remote-mic <command>' syntax remains supported.",
     ].join("\n") + "\n",
   );
   process.exit(exitCode);

@@ -103,8 +103,6 @@ node dist/cli.js setup --name "My Agent" --json
 
 关闭总开关不会删除无线麦SayAll.app 历史或授权事件，但所有 MCP 查询会立即被拒绝。
 
-旧版 `node dist/cli.js remote-mic <command>` 语法继续兼容，已有客户端配置不需要立即修改。
-
 ## MCP 配置
 
 生成的配置包含：
