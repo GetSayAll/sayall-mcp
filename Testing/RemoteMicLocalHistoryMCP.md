@@ -10,7 +10,7 @@
 
 ## 测试前准备
 
-1. 安装 Node.js 22 或以上版本，在仓库根目录执行 `npm install && npm run build`。
+1. 安装 Node.js 22 或以上版本；最简流程直接在仓库根目录执行 `./setup.sh Codex-Test`。
 2. 安装已经支持本地语音记录的无线麦SayAll.app，并在“语音记录”页开启保存功能。
 3. 在 TextEdit 和 Codex 中分别产生至少两条语音记录，确认无线麦SayAll.app 页面中能够看到。
 4. 准备支持 MCP stdio 的 Codex 或其他 Agent 客户端。
@@ -28,12 +28,12 @@
 
 ## 用例 2：开启并创建客户端授权
 
-1. 执行 `node dist/cli.js remote-mic enable`。
-2. 执行 `node dist/cli.js remote-mic authorize --name Codex-Test`。
-3. 保存输出的 MCP 配置到 Codex 本机配置，不写入仓库。
+1. 执行 `./setup.sh Codex-Test`。
+2. 确认脚本自动安装、构建并输出 `mcpConfig` 和 `codexToml`。
+3. 保存输出的 Codex TOML 到本机配置，不写入仓库。
 4. 执行 `remote-mic status` 和 `remote-mic list`。
 
-预期结果：总开关为开启；授权列表包含 Codex-Test、client ID、范围和创建时间，但不显示令牌哈希或明文令牌。
+预期结果：一条 setup 命令完成开启和授权；总开关为开启；授权列表包含 Codex-Test、client ID、范围和创建时间，但不显示令牌哈希或明文令牌。
 
 失败判定：令牌被持久化为明文、授权文件权限不是 `0600`，或不同客户端共用同一个 client ID。
 

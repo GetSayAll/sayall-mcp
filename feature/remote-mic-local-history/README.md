@@ -8,6 +8,7 @@
 
 - 本地总开关默认关闭；
 - 用户通过 CLI 为每个客户端创建独立只读授权；
+- 普通用户可通过 `./setup.sh Codex` 一步完成安装、构建、开启、授权和配置生成；
 - Agent 可以列出 App，并按时间和 App 分页读取记录；
 - 用户可以撤销单个客户端或关闭全部访问；
 - 无线麦SayAll.app 和 SayAll MCP 不主动上传历史。
@@ -31,6 +32,7 @@
 
 - `src/remote-mic/history-store.ts`：磁盘 Schema、App 汇总、过滤和分页；
 - `src/remote-mic/authorization-store.ts`：开关、授权、哈希验证和撤销；
+- `src/remote-mic/integration-config.ts`：通用 MCP JSON 和 Codex TOML；
 - `src/remote-mic/audit-log.ts`：脱敏访问审计；
 - `src/remote-mic/server.ts`：两个只读 MCP 工具；
 - `src/cli.ts`：本机授权和服务启动命令；
@@ -43,7 +45,7 @@
 
 ## 自动化验证
 
-- 3 个测试文件、10 项测试通过；
+- 4 个测试文件、12 项测试通过；
 - TypeScript 严格类型检查通过；
 - 生产构建通过；
 - MCP 集成测试确认只暴露两个工具，撤销后已有连接的下一次查询被拒绝；
@@ -59,4 +61,4 @@
 
 当前状态：候选实现完成，等待真实 Codex MCP 配置和用户数据流验收。
 
-已知限制：首版授权使用 CLI，没有无线麦SayAll.app 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。
+已知限制：首版授权使用 CLI/一键脚本，没有无线麦SayAll.app 图形界面；仓库路径移动后需要更新 MCP 配置中的 Helper 路径；接口本地不等于第三方 AI 客户端一定离线。

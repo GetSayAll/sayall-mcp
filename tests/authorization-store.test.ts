@@ -40,6 +40,18 @@ describe("AuthorizationStore", () => {
     );
   });
 
+  it("combines enabling and authorization in the simplified setup flow", async () => {
+    const paths = await createTestPaths("auth-setup");
+    const store = new AuthorizationStore(paths.accessRoot);
+
+    const created = await store.setupAuthorization("Codex");
+
+    expect(await store.isEnabled()).toBe(true);
+    await expect(store.requireAuthorized(created.clientId, created.token)).resolves.toMatchObject({
+      displayName: "Codex",
+    });
+  });
+
   it("fails closed for wrong, revoked, and globally disabled credentials", async () => {
     const paths = await createTestPaths("auth-revoke");
     const store = new AuthorizationStore(paths.accessRoot);

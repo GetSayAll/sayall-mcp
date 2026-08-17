@@ -47,11 +47,33 @@ npm test
 npm run build
 ```
 
+## 最简接入
+
+已有仓库副本时，只需运行：
+
+```bash
+./setup.sh Codex
+```
+
+脚本会自动安装依赖、构建、开启本地读取、为 Codex 创建独立授权，并输出可以直接复制的 Codex TOML 和通用 MCP JSON。其他客户端把 `Codex` 换成便于辨识的名称即可：
+
+```bash
+./setup.sh "Claude Desktop"
+```
+
+首次从 GitHub 获取可以使用一行命令：
+
+```bash
+git clone https://github.com/GetSayAll/sayall-mcp.git && cd sayall-mcp && ./setup.sh Codex
+```
+
+底层仍使用 Node.js 以保持 MCP 生态兼容，但普通接入不需要再分别执行构建、开启、授权和手工拼接配置。
+
 ## 本机授权
 
 所有命令都从仓库根目录运行。
 
-开启本地 Agent 访问：
+最简流程等价于以下高级命令。需要单独控制时，可以手动开启本地 Agent 访问：
 
 ```bash
 node dist/cli.js remote-mic enable
@@ -64,6 +86,12 @@ node dist/cli.js remote-mic authorize --name Codex
 ```
 
 命令会输出一次性 MCP 配置，其中包含客户端 ID 和明文访问令牌。不要把这段配置提交到 Git、粘贴到 Issue、聊天记录或日志中。
+
+也可以直接使用合并命令；未提供名称时默认使用 Codex：
+
+```bash
+npm run setup -- --name Codex
+```
 
 查看状态和授权列表：
 
@@ -95,6 +123,8 @@ node dist/cli.js remote-mic disable
 - `remote-mic serve` 参数；
 - `SAYALL_MCP_CLIENT_ID`；
 - `SAYALL_MCP_ACCESS_TOKEN`。
+
+`setup` 和 `authorize` 还会返回 `codexToml`，可直接复制到 Codex MCP 配置，不需要手工转换 JSON。
 
 Agent 客户端通过该配置按需启动 Helper。Helper 只在 stdio 上运行，客户端退出后进程随之结束。仓库路径移动或重新安装后，需要重新复制配置中的脚本路径，但不必重新生成授权。
 

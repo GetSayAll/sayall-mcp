@@ -3,6 +3,7 @@
 import { fileURLToPath } from "node:url";
 
 import { AuthorizationStore } from "./remote-mic/authorization-store.js";
+import { createMCPIntegrationOutput } from "./remote-mic/integration-config.js";
 import { defaultRemoteMicPaths } from "./remote-mic/paths.js";
 import { runRemoteMicHistoryServer } from "./remote-mic/server.js";
 
@@ -36,20 +37,25 @@ async function main(): Promise<void> {
     case "authorize": {
       const displayName = requiredOption(argumentsList, "--name");
       const authorization = await authorizationStore.createAuthorization(displayName);
-      const cliPath = fileURLToPath(import.meta.url);
-      printJSON({
-        authorization,
-        mcpConfig: {
-          command: process.execPath,
-          args: [cliPath, "remote-mic", "serve"],
-          env: {
-            [CLIENT_ID_ENV]: authorization.clientId,
-            [ACCESS_TOKEN_ENV]: authorization.token,
-          },
-        },
-        warning:
-          "无线麦SayAll.app and SayAll MCP do not upload transcripts. The authorized AI client may send returned text to its own provider.",
-      });
+      printJSON(
+        createMCPIntegrationOutput(
+          authorization,
+          process.execPath,
+          fileURLToPath(import.meta.url),
+        ),
+      );
+      return;
+    }
+    case "setup": {
+      const displayName = optionalOption(argumentsList, "--name") ?? "Codex";
+      const authorization = await authorizationStore.setupAuthorization(displayName);
+      printJSON(
+        createMCPIntegrationOutput(
+          authorization,
+          process.execPath,
+          fileURLToPath(import.meta.url),
+        ),
+      );
       return;
     }
     case "revoke":
@@ -89,12 +95,17 @@ function publicAuthorization(authorization: {
 }
 
 function requiredOption(argumentsList: string[], name: string): string {
-  const index = argumentsList.indexOf(name);
-  const value = index >= 0 ? argumentsList[index + 1] : undefined;
+  const value = optionalOption(argumentsList, name);
   if (!value || value.startsWith("--")) {
     throw new Error(`Missing required option ${name}.`);
   }
   return value;
+}
+
+function optionalOption(argumentsList: string[], name: string): string | undefined {
+  const index = argumentsList.indexOf(name);
+  const value = index >= 0 ? argumentsList[index + 1] : undefined;
+  return value && !value.startsWith("--") ? value : undefined;
 }
 
 function printJSON(value: unknown): void {
@@ -108,6 +119,7 @@ function printUsageAndExit(): never {
       "  sayall-mcp remote-mic enable",
       "  sayall-mcp remote-mic disable",
       "  sayall-mcp remote-mic status",
+      "  sayall-mcp remote-mic setup [--name <client-name>]",
       "  sayall-mcp remote-mic authorize --name <client-name>",
       "  sayall-mcp remote-mic revoke --client-id <uuid>",
       "  sayall-mcp remote-mic list",

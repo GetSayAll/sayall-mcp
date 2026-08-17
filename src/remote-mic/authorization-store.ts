@@ -123,6 +123,13 @@ export class AuthorizationStore {
     };
   }
 
+  async setupAuthorization(displayName: string): Promise<CreatedAuthorization> {
+    if (!(await this.isEnabled())) {
+      await this.setEnabled(true);
+    }
+    return this.createAuthorization(displayName);
+  }
+
   async revokeAuthorization(clientId: string): Promise<void> {
     const normalizedClientId = z.uuid().parse(clientId);
     const authorization = (await this.listAuthorizations()).find(
