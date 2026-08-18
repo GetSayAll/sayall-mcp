@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sayall.app/mcp/v1/list-transcript-apps.output.schema.json",
+  "title": "list_transcript_apps output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["applications", "skippedFileCount"],
+  "properties": {
+    "applications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "applicationName",
+          "bundleIdentifier",
+          "recordCount",
+          "earliestEndedAt",
+          "latestEndedAt"
+        ],
+        "properties": {
+          "applicationName": { "type": "string" },
+          "bundleIdentifier": { "type": "string" },
+          "recordCount": { "type": "integer", "minimum": 0 },
+          "earliestEndedAt": { "type": "string", "format": "date-time" },
+          "latestEndedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "skippedFileCount": { "type": "integer", "minimum": 0 }
+  }
+}

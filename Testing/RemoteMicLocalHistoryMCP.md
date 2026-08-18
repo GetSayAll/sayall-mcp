@@ -3,131 +3,142 @@
 ## 适用范围
 
 - 仓库：`GetSayAll/sayall-mcp`
-- 分支：`main`
-- 版本：`0.1.0`
-- 平台：macOS
-- 当前状态：候选实现，等待真实多客户端 MCP 验收
+- 契约：首个正式发布候选 `v1`
+- 平台：macOS 14 及以上
+- 运行时：无线麦SayAll.app 包内 Swift `SayAllMCP` Helper
+- 当前状态：候选契约，等待真实多客户端 MCP 验收
 
 ## 测试前准备
 
-1. 安装 Node.js 20 或以上版本；执行 `git clone --depth 1 https://github.com/GetSayAll/sayall-mcp.git && ./sayall-mcp/setup.sh`，或在已有仓库根目录执行 `./setup.sh`。
-2. 安装已经支持本地语音记录的无线麦SayAll.app，并在“语音记录”页开启保存功能。
-3. 在 TextEdit 和 Codex 中分别产生至少两条语音记录，确认无线麦SayAll.app 页面中能够看到。
-4. 准备一个使用标准 `mcpServers` JSON 的客户端和 Codex；原始 LLM API 不属于可直接连接 stdio MCP 的客户端。
-5. 不要把 `authorize` 输出的令牌粘贴到聊天、Issue、截图或版本库。
-6. 记录测试时间、客户端名称、授权 client ID 和失败命令；问题日志中不得包含令牌或转写正文。
+1. 安装包含 `Contents/Helpers/SayAllMCP` 的完整无线麦SayAll.app；不要从本仓库安装运行时。
+2. 不安装 Node.js、npm、Homebrew 或 Xcode，确认普通用户依赖边界。
+3. 在“回眸”页开启“记录回眸”，并在两个 App 中分别产生两天以上的无隐私测试记录。
+4. 准备 Codex 和至少一个使用标准 `mcpServers` JSON 的客户端；原始 LLM API 不属于可直接连接 stdio MCP 的客户端。
+5. 在 App 内开启“本地 Agent 访问”，分别为两个客户端创建独立授权并复制配置。
+6. 不要把令牌、真实 client ID 或转写正文粘贴到聊天、Issue、截图、日志或版本库。
 
-## 用例 1：默认关闭
+## 用例 1：配置与零依赖安装
 
-1. 在没有执行 `node dist/cli.js enable` 的新环境中执行 `node dist/cli.js authorize --name TestAgent`。
-2. 尝试以任意 client ID 和令牌启动 `node dist/cli.js serve`。
+1. 对比 App 生成的配置与 `examples/codex.toml`、`examples/standard-mcp.json` 的结构。
+2. 确认标准安装的 command 为 `/Applications/SayAll.app/Contents/Helpers/SayAllMCP`；从其他目录运行时指向当前 App 内 Helper。args 只有 `serve`，env 只有两个凭据字段。
+3. 在没有编程依赖的环境重启客户端。
 
-预期结果：创建授权和启动服务都被拒绝，错误明确表示本地 Agent 访问未开启；不会返回任何 App 或正文。
+预期结果：客户端直接启动 App 内 Helper；无需克隆仓库、运行脚本或安装额外运行时；无线麦SayAll.app 主进程不必常驻。
 
-失败判定：默认状态可以读取历史，或错误信息泄漏文件路径、令牌、历史正文。
+失败判定：配置指向仓库、Node.js、源码或脚本，要求额外依赖，或只有 App 主进程运行时才能读取。
 
-## 用例 2：开启并创建客户端授权
+## 用例 2：默认关闭与用户授权
 
-1. 执行 `./setup.sh "Standard-JSON-Test"`。
-2. 确认脚本自动安装、构建并输出标准 `mcpServers` JSON 和 Codex TOML。
-3. 把标准 JSON 保存到兼容客户端，把 Codex TOML 保存到 Codex；都不写入仓库。
-4. 执行 `node dist/cli.js status` 和 `node dist/cli.js list`。
+1. 在全新账号打开“本地 Agent 访问”。
+2. 确认默认关闭，关闭状态不能创建授权。
+3. 主动开启并为两个客户端分别创建授权。
+4. 检查 `~/Library/Application Support/RemoteMic/MCP/v1/access.json`。
 
-预期结果：一条 setup 命令完成开启和授权；两种配置都使用简短 `serve` 参数；总开关为开启；授权列表包含 Standard-JSON-Test、client ID、范围和创建时间，但不显示令牌哈希或明文令牌。
+预期结果：默认关闭；两个客户端获得不同 client ID 和令牌；文件包含 `schemaVersion: 1`、令牌哈希和 Helper 路径指纹，不含明文令牌或原始 App 路径；目录 `0700`、文件 `0600`。
 
-失败判定：令牌被持久化为明文、授权文件权限不是 `0600`，或不同客户端共用同一个 client ID。
+失败判定：默认开启、客户端共享凭据、磁盘保存明文令牌、权限过宽或 Agent 可绕过 App 自行授权。
 
 ## 用例 3：列出 App
 
 1. 分别在标准 JSON 客户端和 Codex 中连接 MCP。
 2. 调用 `list_transcript_apps`。
+3. 使用 `schemas/list-transcript-apps.output.schema.json` 校验 structured content。
 
-预期结果：返回无线麦SayAll.app 历史中的 App 名称、Bundle ID、记录数和最早/最新时间；不返回任何转写正文。
+预期结果：返回 App 名称、Bundle ID、记录数和最早/最新时间；不返回任何转写正文；结构符合 Schema。
 
-失败判定：缺少已经存在的 App、返回正文、内部文件路径、session ID 或 `applicationKey`。
+失败判定：缺少已经存在的 App，返回正文、内部文件路径、session ID、`applicationKey` 或未声明字段。
 
-## 用例 4：今天、本周和单个 App 查询
+## 用例 4：时间、App、顺序与分页
 
-1. 调用 `query_transcripts`，传入今天的 ISO-8601 时间范围。
-2. 改为最近七天时间范围。
-3. 增加一个真实 Bundle ID 筛选。
-4. 分别使用升序和倒序。
+1. 使用 `query_transcripts` 查询今天和最近七天。
+2. 增加一个真实 Bundle ID 筛选。
+3. 分别使用升序和倒序。
+4. 设置 `limit: 1`，使用 `nextCursor` 读取到 `hasMore: false`。
+5. 使用 `schemas/query-transcripts.output.schema.json` 校验每页。
 
-预期结果：只返回范围内记录；App 筛选准确；时间顺序稳定；每条只包含公开字段和本次转写文字。
+预期结果：只返回范围和 App 内记录；顺序稳定；分页不重不漏；最后一页 `nextCursor` 为 null；每条只有九个公开字段。
 
-失败判定：跨范围返回、跨 App 串记录、日期时区错误、包含已删除记录或内部字段。
+失败判定：跨范围或跨 App 返回、重复、遗漏、无限循环、内部字段泄漏或 Schema 不匹配。
 
-## 用例 5：全部历史分页
+## 用例 5：参数拒绝
 
-1. 使用 `limit: 1` 调用 `query_transcripts`。
-2. 使用返回的 `nextCursor` 连续读取，直到 `hasMore` 为 false。
-3. 记录所有 ID，检查是否重复或遗漏。
-4. 把倒序 cursor 用在升序查询中。
+1. 把倒序 cursor 用在升序查询中。
+2. 尝试 `limit: 0`、`501`、超过 100 个 Bundle ID、过长 cursor 和未知输入字段。
+3. 尝试无效日期或开始时间不早于结束时间。
 
-预期结果：分页不重不漏；最后一页 `nextCursor` 为 null；顺序不匹配的 cursor 被拒绝。
+预期结果：所有无效请求返回明确 Tool Error，不返回历史正文；合法请求仍可继续使用。
 
-失败判定：一次无视 limit 返回全部历史、游标可以跨顺序混用、重复、遗漏或无限循环。
+失败判定：忽略错误参数、一次返回全部历史、崩溃、泄漏路径或正文。
 
-## 用例 6：错误令牌与撤销
+## 用例 6：错误令牌、撤销和关闭
 
-1. 把配置中的令牌改错一个字符后连接。
-2. 恢复正确配置，确认可以读取。
-3. 执行 `node dist/cli.js revoke --client-id <UUID>`。
-4. 不重启 Agent 客户端，再次调用两个工具。
+1. 把一个客户端令牌改错一个字符并连接。
+2. 恢复正确令牌，确认可读。
+3. 在 App 内撤销该客户端，不重启连接再次调用。
+4. 确认另一个客户端仍可读，再关闭总开关并再次调用。
 
-预期结果：错误令牌拒绝；正确令牌可用；撤销后的下一次调用立即拒绝，即使 MCP 进程此前已经连接。
+预期结果：错误令牌被拒绝；撤销在下一次调用立即生效且不影响其他客户端；关闭总开关后全部立即拒绝；历史不被删除。
 
-失败判定：错误令牌可读、撤销只在重启后生效，或撤销一个客户端影响其他有效授权。
+失败判定：错误令牌可读、撤销必须重启、撤销一个影响全部、关闭后仍可读或关闭删除历史。
 
-## 用例 7：关闭后拒绝与历史保留
+## 用例 7：损坏文件、安全路径与审计
 
-1. 新建一个有效客户端并成功读取。
-2. 执行 `node dist/cli.js disable`。
-3. 再次调用 MCP。
-4. 打开无线麦SayAll.app“语音记录”页面。
+1. 只在测试副本中准备损坏或过大的日期 JSON、历史目录符号链接和 `access.json` 符号链接。
+2. 保留至少一个合法历史文件并查询。
+3. 检查 `RemoteMic/MCP/v1/audit/`。
 
-预期结果：所有客户端立即被拒绝；无线麦SayAll.app 中已有历史保持不变；重新开启后未撤销的令牌恢复可用。
+预期结果：损坏历史计入 `skippedFileCount` 且合法记录仍可读；符号链接被拒绝；审计只含客户端 ID、工具、时间、结果和数量，不含正文、令牌或完整响应。
 
-失败判定：关闭删除历史、关闭后仍能读取，或必须重新生成全部授权。
+失败判定：读取链接目标、修改历史、服务崩溃、审计包含正文或令牌。
 
-## 用例 8：损坏文件与并发删除
+## 用例 8：本地进程与网络边界
 
-1. 只在测试副本中准备一个损坏日期 JSON，不修改真实用户历史。
-2. 同时保留一个合法日期文件。
-3. 查询时在无线麦SayAll.app 页面删除另一条测试记录。
+1. MCP 连接期间检查 `SayAllMCP` 进程、监听端口和 stdout/stderr。
+2. 退出 Agent 客户端。
 
-预期结果：损坏文件计入 `skippedFileCount`，合法记录仍可读；并发删除不会崩溃、恢复或改写历史。
+预期结果：Helper 只通过 stdin/stdout 通信，不创建 TCP/UDP/Bonjour，不常驻；stdout 只有 JSON-RPC，诊断只写 stderr；客户端退出后进程结束。
 
-失败判定：整个查询失败、返回损坏内容、恢复已删除记录或修改无线麦SayAll.app 文件。
+失败判定：出现网络监听、普通日志混入 stdout、退出后继续常驻或持续读取文件。
 
-## 用例 9：本地与网络边界
+## 用例 9：v1 向后兼容
 
-1. MCP 连接期间检查 Helper 进程。
-2. 检查是否存在由 Helper 创建的 TCP/UDP 监听端口或 Bonjour 服务。
-3. 退出 Agent 客户端。
+1. 在首个正式 `v1` App 中保存脱敏后的两种客户端配置、合法请求/响应 Fixture 和 `access.json` 测试副本。
+2. 安装后续新版 App，保持安装路径和客户端配置不变。
+3. 使用原授权、工具名、参数和分页语义重新调用。
+4. 比对 `schemas/` 中所有必需输出字段。
 
-预期结果：Helper 只通过 stdin/stdout 通信；没有网络监听；客户端退出后 Helper 结束。
+预期结果：旧配置无需修改；旧授权继续有效；旧参数语义和封闭输出结构不变；新增输出结构使用新工具或 `v2`；新版继续读取 `RemoteMic/MCP/v1/access.json` 与 `RemoteMic/Transcripts/v1`。
 
-失败判定：出现 localhost 或局域网监听、访问无线麦SayAll.app Web Relay、退出后仍常驻。
+失败判定：Helper 路径、`serve`、环境变量、工具名或已发布字段发生破坏性变化，旧授权失效，或新版不能读取 `v1` 数据。
+
+## 用例 10：canonical、非标准和旧 App 路径
+
+1. 分别从 `/Applications/SayAll.app` 和一个包含空格的测试目录创建连接，核对客户端 command。
+2. 退出 App，把测试 App 移到另一目录后重新启动。
+3. 准备由旧测试版生成、Helper 指向 `/Applications/Remote Mic.app/Contents/Helpers/SayAllMCP` 的授权状态。
+4. 检查页面提示，并按提示移除、重新连接；在操作前后比较客户端中的其他 MCP Server。
+
+预期结果：首次连接始终使用当前 App 的真实 Helper；移动、改名、旧 `Remote Mic.app` 路径和缺少路径指纹的旧授权都会提示重新连接。授权状态不保存原始自定义目录；移除和重连只处理 `sayall_history` 或 Codex 的 SayAll 托管区块。
+
+失败判定：移动后仍显示健康、静默使用不存在的旧 Helper、覆盖同名非托管 MCP、修改或删除其他 MCP、授权文件或日志暴露原始自定义路径。
 
 ## 稳定功能回归
 
-- 无线麦SayAll.app 继续按 App 和日期保存、显示、复制和可恢复删除历史；
-- MCP 开关缺失、关闭、开启、使用后关闭四种状态不影响语音捕获；
-- MCP 查询不修改 JSON、文件权限、日期分组或 App 图标；
-- 无历史目录时返回空集合，不创建伪造历史；
-- CLI stdout 在 serve 模式只输出 MCP 协议，诊断只写 stderr。
+- 本地 Agent 访问缺失/关闭、明确关闭、开启、使用后关闭四种状态不影响语音捕获、回眸写入、显示、复制和可恢复删除。
+- App 删除记录后，MCP 后续查询不再返回；MCP 本身不能删除、恢复或修改记录。
+- 无历史目录时返回空集合，不创建伪造历史。
+- 更新 App 后 Helper 仍具有正确架构、执行权限、最低系统版本和签名。
+- 安装路径不变时旧配置继续可用；路径变化时明确提示重新连接，不自动改写其他 MCP。
 
 ## 日志收集
 
-- 本地脱敏审计：`~/Library/Application Support/SayAllMCP/RemoteMicHistory/v1/audit/`；
-- 开关事件：同目录 `settings.ndjson`；
-- 授权事件：同目录 `authorizations.ndjson`；
-- 不要提交这些文件，也不要复制其中的 client ID 到公开问题；
-- 不收集或转发 MCP 客户端配置中的明文令牌。
+- 授权状态：`~/Library/Application Support/RemoteMic/MCP/v1/access.json`；
+- 脱敏审计：`~/Library/Application Support/RemoteMic/MCP/v1/audit/`；
+- Helper 诊断：由 MCP 客户端收集的 stderr；
+- 对外提供前删除 client ID，绝不提供令牌和真实正文。
 
 ## 自动化、代理实测和用户实测边界
 
-自动化覆盖历史解析、Apple 日期转换、App 汇总、过滤、分页、畸形 cursor、损坏文件、符号链接拒绝、默认关闭、令牌哈希、文件权限、错误令牌、撤销、关闭、标准 JSON/Codex 配置生成、只读 Tool Annotations、输出 Schema 和 MCP 工具级撤销复查。类型检查和构建只证明源码边界。
+仓库自动检查 JSON Schema、配置示例和 Fixture 均为合法 JSON，并通过人工或脚本把 Schema 与 App Helper 的 `tools/list` 定义逐字段比对。App 主仓库负责 Swift 单元测试、真实 stdio 闭环、Release 构建、架构、最低系统版本和签名校验。
 
-代理已使用构建后的只读解析器加载本机真实无线麦SayAll.app 历史，确认实际 JSON Schema、Codex/TextEdit 分组和 Apple 日期转换兼容，过程中没有输出正文。当前尚未把真实用户令牌写入标准 JSON 客户端或 Codex 配置，也未使用真实历史正文执行云端 Agent 调用，因此不能表述为已经完成真实多客户端数据流验收。用户需要确认其选定 AI 客户端是否会把 MCP 返回内容上传给第三方服务商。
+这些自动化不能替代真实 Codex 和标准 JSON 客户端验收，也不能证明第三方客户端不会上传返回内容。用户必须确认其选定客户端的配置位置、重启行为、分页、撤销即时生效和数据处理方式。

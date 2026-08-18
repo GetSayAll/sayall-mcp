@@ -1,9 +1,8 @@
 # TODO
 
-- [ ] 无线麦SayAll.app 本地语音历史只读 MCP
-  - MCP stdio 服务、App 列表、按时间/App 查询、稳定分页、默认关闭、每客户端授权、撤销和脱敏审计已经实现并通过自动化测试。
-  - 已提供一行 Git clone + 无参数 `./setup.sh` 接入；自动安装、构建、开启、授权并生成标准 `mcpServers` JSON 和 Codex TOML。
-  - 已补充简短顶层 CLI、旧命令兼容、MCP 输出 Schema、MIT 许可和公开包元数据。
-  - 仍需用户在至少一个标准 JSON 客户端和 Codex 中完成授权、分页读取、撤销和关闭后拒绝的人工验收；完成前不标记为已完成。
-- [ ] 无线麦SayAll.app 图形界面授权管理
-  - 当前首版通过 `sayall-mcp` CLI 管理总开关和客户端令牌；未来如需在无线麦SayAll.app“语音记录”页面管理授权，可复用现有追加事件格式。
+- [ ] 发布无线麦SayAll.app 本地语音历史 MCP `v1`
+  - 公开契约、JSON Schema、配置示例、授权与隐私说明、兼容政策和测试手册已经建立。
+  - 唯一正式运行时由无线麦SayAll.app 内的 Swift Helper 提供；本仓库不再包含 Node.js 运行时、CLI 或安装脚本。
+  - App 图形界面已实现默认关闭总开关、每客户端授权、撤销和配置复制。
+  - canonical Helper 路径已更新为 `/Applications/SayAll.app/Contents/Helpers/SayAllMCP`；非标准目录使用 App 生成的真实路径，移动或旧路径授权通过私有路径指纹提示重新连接，不覆盖其他 MCP。
+  - 仍需使用正式候选 App 在 Codex 和至少一个标准 JSON MCP 客户端完成真实配置、分页读取、撤销、关闭后拒绝和升级兼容人工验收；完成前不标记为已完成。
