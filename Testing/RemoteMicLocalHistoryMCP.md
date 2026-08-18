@@ -20,7 +20,7 @@
 ## 用例 1：配置与零依赖安装
 
 1. 对比 App 生成的配置与 `examples/codex.toml`、`examples/standard-mcp.json` 的结构。
-2. 确认 command 指向安装 App 内 Helper，args 只有 `serve`，env 只有两个凭据字段。
+2. 确认标准安装的 command 为 `/Applications/SayAll.app/Contents/Helpers/SayAllMCP`；从其他目录运行时指向当前 App 内 Helper。args 只有 `serve`，env 只有两个凭据字段。
 3. 在没有编程依赖的环境重启客户端。
 
 预期结果：客户端直接启动 App 内 Helper；无需克隆仓库、运行脚本或安装额外运行时；无线麦SayAll.app 主进程不必常驻。
@@ -34,7 +34,7 @@
 3. 主动开启并为两个客户端分别创建授权。
 4. 检查 `~/Library/Application Support/RemoteMic/MCP/v1/access.json`。
 
-预期结果：默认关闭；两个客户端获得不同 client ID 和令牌；文件包含 `schemaVersion: 1` 和 SHA-256 哈希，不含明文令牌；目录 `0700`、文件 `0600`。
+预期结果：默认关闭；两个客户端获得不同 client ID 和令牌；文件包含 `schemaVersion: 1`、令牌哈希和 Helper 路径指纹，不含明文令牌或原始 App 路径；目录 `0700`、文件 `0600`。
 
 失败判定：默认开启、客户端共享凭据、磁盘保存明文令牌、权限过宽或 Agent 可绕过 App 自行授权。
 
@@ -111,12 +111,24 @@
 
 失败判定：Helper 路径、`serve`、环境变量、工具名或已发布字段发生破坏性变化，旧授权失效，或新版不能读取 `v1` 数据。
 
+## 用例 10：canonical、非标准和旧 App 路径
+
+1. 分别从 `/Applications/SayAll.app` 和一个包含空格的测试目录创建连接，核对客户端 command。
+2. 退出 App，把测试 App 移到另一目录后重新启动。
+3. 准备由旧测试版生成、Helper 指向 `/Applications/Remote Mic.app/Contents/Helpers/SayAllMCP` 的授权状态。
+4. 检查页面提示，并按提示移除、重新连接；在操作前后比较客户端中的其他 MCP Server。
+
+预期结果：首次连接始终使用当前 App 的真实 Helper；移动、改名、旧 `Remote Mic.app` 路径和缺少路径指纹的旧授权都会提示重新连接。授权状态不保存原始自定义目录；移除和重连只处理 `sayall_history` 或 Codex 的 SayAll 托管区块。
+
+失败判定：移动后仍显示健康、静默使用不存在的旧 Helper、覆盖同名非托管 MCP、修改或删除其他 MCP、授权文件或日志暴露原始自定义路径。
+
 ## 稳定功能回归
 
 - 本地 Agent 访问缺失/关闭、明确关闭、开启、使用后关闭四种状态不影响语音捕获、回眸写入、显示、复制和可恢复删除。
 - App 删除记录后，MCP 后续查询不再返回；MCP 本身不能删除、恢复或修改记录。
 - 无历史目录时返回空集合，不创建伪造历史。
 - 更新 App 后 Helper 仍具有正确架构、执行权限、最低系统版本和签名。
+- 安装路径不变时旧配置继续可用；路径变化时明确提示重新连接，不自动改写其他 MCP。
 
 ## 日志收集
 

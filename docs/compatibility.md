@@ -8,7 +8,7 @@
 
 未来新版无线麦SayAll.app 必须继续支持：
 
-- App 安装路径稳定时，旧 Agent 配置中的 `Contents/Helpers/SayAllMCP`；
+- canonical `/Applications/SayAll.app/Contents/Helpers/SayAllMCP`，以及 App 安装路径稳定时旧 Agent 配置中的当前 `Contents/Helpers/SayAllMCP`；
 - `serve` 启动参数；
 - `SAYALL_MCP_CLIENT_ID` 和 `SAYALL_MCP_ACCESS_TOKEN`；
 - `list_transcript_apps` 和 `query_transcripts` 工具名；
@@ -30,3 +30,5 @@
 ## 发布门禁
 
 首个正式 `v1` 应保存脱敏配置、Schema、合法请求/响应 Fixture 和版本化本地状态基线。后续发布前必须用这些基线验证旧配置、旧授权、旧请求和必需输出字段继续工作。
+
+App 绝对路径变化不属于客户端配置可自动保持的兼容场景。无线麦SayAll.app 只保存 Helper 路径的私有 SHA-256 指纹；检测到 App 改名、移动或旧授权缺少指纹时，提示用户移除并重新连接。该流程只能修改 `sayall_history` 或 Codex 的 SayAll 托管区块，不能覆盖其他 MCP Server。

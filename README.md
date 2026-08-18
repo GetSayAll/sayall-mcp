@@ -5,7 +5,7 @@
 本仓库不提供、安装或运行 MCP 服务。唯一正式运行时是随无线麦SayAll.app 安装的原生 Swift Helper：
 
 ```text
-/Applications/Remote Mic.app/Contents/Helpers/SayAllMCP
+/Applications/SayAll.app/Contents/Helpers/SayAllMCP
 ```
 
 用户只需安装无线麦SayAll.app，不需要克隆本仓库，也不需要 Node.js、npm、Homebrew、Xcode 或其他编程环境。
@@ -52,7 +52,7 @@ Swift 运行时、App 图形授权管理、签名和打包由无线麦SayAll.app
 
 ## 兼容政策
 
-未发布的 Node 实现、旧路径和旧格式不属于兼容范围。首个正式发布的接口是 `v1`；从 `v1` 开始，未来版本保持旧 Agent 配置、旧工具参数、已发布返回结构和 `v1` 本地数据可继续使用。`v1` 输出是封闭 Schema，新增输出字段或其他破坏性变化将使用新工具名或并行 `v2`。
+未发布的 Node 实现、旧 Application Support 路径和旧格式不属于兼容范围。canonical Helper 为 `/Applications/SayAll.app/Contents/Helpers/SayAllMCP`；从其他目录运行时，App 生成当前真实路径。首个正式发布的接口是 `v1`；从 `v1` 开始，未来版本保持安装路径未变化时的旧 Agent 配置、旧工具参数、已发布返回结构和 `v1` 本地数据可继续使用。`v1` 输出是封闭 Schema，新增输出字段或其他破坏性变化将使用新工具名或并行 `v2`。
 
 完整规则见 [兼容政策](docs/compatibility.md)。
 

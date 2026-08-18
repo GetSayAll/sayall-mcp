@@ -27,9 +27,9 @@
 配置的稳定入口为：
 
 ```text
-command: /Applications/Remote Mic.app/Contents/Helpers/SayAllMCP
+command: /Applications/SayAll.app/Contents/Helpers/SayAllMCP
 args: ["serve"]
 env: SAYALL_MCP_CLIENT_ID, SAYALL_MCP_ACCESS_TOKEN
 ```
 
-如果用户把 App 移到其他路径，需要从 App 重新复制配置。不要手工猜测或共享访问令牌。
+如果 App 不在 canonical 路径，配置必须使用无线麦SayAll.app 当前生成的真实 Helper 路径。App 改名、移动或从旧 `Remote Mic.app` 迁移后，页面会提示先移除旧连接再重新连接；不要手工猜测路径、覆盖其他 MCP 或共享访问令牌。
